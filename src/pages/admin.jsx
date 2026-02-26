@@ -144,7 +144,60 @@ export default function AdminPage({
   const [tables, setTables] = useState(initialTables);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // ✅ 第一步：强制提升函数定义到组件最顶部
+  // ✅ 第一步：强制提升函数定义到组件最顶部（在所有 useEffect 之前）
+  // 先定义数据加载函数，因为其他函数会调用它们
+  const loadCategories = async () => {
+    try {
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const result = await db.collection('restaurant_category').get();
+      console.log('分类数据查询结果:', result);
+      if (result.data && result.data.length > 0) {
+        const categoryNames = result.data.map(record => record.name);
+        setCategories(categoryNames);
+        console.log('分类列表已更新:', categoryNames);
+      } else {
+        console.log('未找到分类数据，使用默认分类');
+        setCategories(['肉类', '蔬菜', '海鲜', '主食']);
+      }
+    } catch (error) {
+      console.error('加载分类数据失败:', error);
+      // 如果数据库中没有分类数据，使用默认分类
+      setCategories(['肉类', '蔬菜', '海鲜', '主食']);
+    }
+  };
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const result = await db.collection('restaurant_product').get();
+      console.log('商品数据查询结果:', result);
+      console.log('商品数据详情:', JSON.stringify(result.data, null, 2));
+      if (result.data && result.data.length > 0) {
+        setProducts(result.data);
+        console.log('商品列表已更新:', result.data);
+      } else {
+        console.log('未找到商品数据，使用本地数据');
+        setProducts(initialProducts);
+      }
+    } catch (error) {
+      console.error('加载商品失败:', error);
+      // 如果数据库不存在或查询失败，使用本地数据
+      console.log('使用本地数据');
+      setProducts(initialProducts);
+      setUseLocalData(true);
+      toast({
+        title: '使用本地数据',
+        description: '数据库连接失败，已切换到本地数据模式',
+        variant: 'default'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 然后定义事件处理函数
   const handleAddCategory = async category => {
     console.log('✅ [SUCCESS] 父组件接收到添加请求:', category);
     try {
@@ -314,58 +367,6 @@ export default function AdminPage({
     }
   };
 
-  // 加载分类数据
-  const loadCategories = async () => {
-    try {
-      const tcb = await $w.cloud.getCloudInstance();
-      const db = tcb.database();
-      const result = await db.collection('restaurant_category').get();
-      console.log('分类数据查询结果:', result);
-      if (result.data && result.data.length > 0) {
-        const categoryNames = result.data.map(record => record.name);
-        setCategories(categoryNames);
-        console.log('分类列表已更新:', categoryNames);
-      } else {
-        console.log('未找到分类数据，使用默认分类');
-        setCategories(['肉类', '蔬菜', '海鲜', '主食']);
-      }
-    } catch (error) {
-      console.error('加载分类数据失败:', error);
-      // 如果数据库中没有分类数据，使用默认分类
-      setCategories(['肉类', '蔬菜', '海鲜', '主食']);
-    }
-  };
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const tcb = await $w.cloud.getCloudInstance();
-      const db = tcb.database();
-      const result = await db.collection('restaurant_product').get();
-      console.log('商品数据查询结果:', result);
-      console.log('商品数据详情:', JSON.stringify(result.data, null, 2));
-      if (result.data && result.data.length > 0) {
-        setProducts(result.data);
-        console.log('商品列表已更新:', result.data);
-      } else {
-        console.log('未找到商品数据，使用本地数据');
-        setProducts(initialProducts);
-      }
-    } catch (error) {
-      console.error('加载商品失败:', error);
-      // 如果数据库不存在或查询失败，使用本地数据
-      console.log('使用本地数据');
-      setProducts(initialProducts);
-      setUseLocalData(true);
-      toast({
-        title: '使用本地数据',
-        description: '数据库连接失败，已切换到本地数据模式',
-        variant: 'default'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // 统计数据
   const stats = {
     totalProducts: products.length,
@@ -516,16 +517,18 @@ export default function AdminPage({
     setEditingProduct(product);
     setIsEditDialogOpen(true);
   };
-
-  // ✅ 第三步：插入诊断日志
-  console.log('🔍 [DIAGNOSTIC] 父组件渲染检查:');
-  console.log('   1. handleAddCategory 类型:', typeof handleAddCategory);
-  console.log('   2. handleRenameCategory 类型:', typeof handleRenameCategory);
-  console.log('   3. categories 数据量:', categories?.length);
-  if (typeof handleAddCategory !== 'function') {
-    console.error('❌ [CRITICAL] handleAddCategory 在渲染时为 undefined! 检查函数是否定义在 return 之后或被条件遮挡。');
-  }
   return <div className={`min-h-screen bg-[#FAFAFA] ${className || ''}`} style={style}>
+    {/* ✅ 第三步：插入诊断日志 - 在组件渲染时执行 */}
+    {(() => {
+      console.log('🔍 [DIAGNOSTIC] 父组件渲染检查:');
+      console.log('   1. handleAddCategory 类型:', typeof handleAddCategory);
+      console.log('   2. handleRenameCategory 类型:', typeof handleRenameCategory);
+      console.log('   3. categories 数据量:', categories?.length);
+      if (typeof handleAddCategory !== 'function') {
+        console.error('❌ [CRITICAL] handleAddCategory 在渲染时为 undefined! 检查函数是否定义在 return 之后或被条件遮挡。');
+      }
+      return null;
+    })()}
       {/* 顶部导航 */}
       <header className="bg-[#1A1A1A] text-white sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4">
