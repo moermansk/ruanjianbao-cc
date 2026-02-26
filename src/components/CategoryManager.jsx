@@ -6,10 +6,10 @@ import { Plus, X, Edit2, Check } from 'lucide-react';
 import { Button, Input, Dialog, DialogContent, DialogHeader, DialogTitle, useToast, DialogTrigger } from '@/components/ui';
 
 export function CategoryManager({
-  categories,
-  onAddCategory,
-  onDeleteCategory,
-  onRenameCategory
+  categories = [],
+  onAddCategory = () => console.warn('⚠️ onAddCategory 未定义'),
+  onDeleteCategory = () => console.warn('⚠️ onDeleteCategory 未定义'),
+  onRenameCategory = () => console.warn('⚠️ onRenameCategory 未定义')
 }) {
   const {
     toast

@@ -6,10 +6,10 @@ import { Plus, X, Edit2, Check } from 'lucide-react';
 import { Button, Input, Dialog, DialogContent, DialogHeader, DialogTitle, useToast, DialogTrigger } from '@/components/ui';
 
 export function TableManager({
-  tables,
-  onAddTable,
-  onDeleteTable,
-  onRenameTable
+  tables = [],
+  onAddTable = () => console.warn('⚠️ onAddTable 未定义'),
+  onDeleteTable = () => console.warn('⚠️ onDeleteTable 未定义'),
+  onRenameTable = () => console.warn('⚠️ onRenameTable 未定义')
 }) {
   const {
     toast
