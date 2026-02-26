@@ -128,6 +128,19 @@ export default function AdminPage({
   style,
   $w
 }) {
+  // ✅【强制插入开始】放在所有 useState/useEffect 之前
+  const handleAddCategory = async newName => {
+    console.log('🎉 成功！父组件收到了添加请求:', newName);
+    alert(`准备添加分类: ${newName}`);
+    // TODO: 这里以后放你的数据库添加代码
+  };
+  const handleRenameCategory = async (id, newName) => {
+    console.log('🎉 成功！父组件收到了重命名请求:', id, newName);
+    alert(`准备重命名 ID ${id} 为: ${newName}`);
+    // TODO: 这里以后放你的数据库更新代码
+  };
+  // ✅【强制插入结束】
+
   const {
     toast
   } = useToast();
@@ -198,29 +211,6 @@ export default function AdminPage({
   };
 
   // 然后定义事件处理函数
-  const handleAddCategory = async category => {
-    console.log('✅ [SUCCESS] 父组件接收到添加请求:', category);
-    try {
-      const tcb = await $w.cloud.getCloudInstance();
-      const db = tcb.database();
-      const result = await db.collection('restaurant_category').add({
-        name: category
-      });
-      console.log('分类添加结果:', result);
-      await loadCategories();
-      toast({
-        title: '分类已添加',
-        description: `分类 "${category}" 已添加`
-      });
-    } catch (error) {
-      console.error('添加分类失败:', error);
-      toast({
-        title: '添加失败',
-        description: error.message || '添加分类失败，请重试',
-        variant: 'destructive'
-      });
-    }
-  };
   const handleDeleteCategory = async category => {
     try {
       const tcb = await $w.cloud.getCloudInstance();
@@ -246,43 +236,6 @@ export default function AdminPage({
       toast({
         title: '删除失败',
         description: error.message || '删除分类失败，请重试',
-        variant: 'destructive'
-      });
-    }
-  };
-  const handleRenameCategory = async (oldName, newName) => {
-    console.log('✅ [SUCCESS] 父组件接收到重命名请求:', oldName, newName);
-    try {
-      const tcb = await $w.cloud.getCloudInstance();
-      const db = tcb.database();
-      const result = await db.collection('restaurant_category').where({
-        name: oldName
-      }).update({
-        data: {
-          name: newName
-        }
-      });
-      console.log('分类重命名结果:', result);
-      const productResult = await db.collection('restaurant_product').where({
-        category: oldName
-      }).update({
-        data: {
-          category: newName
-        }
-      });
-      console.log('商品分类更新结果:', productResult);
-      await loadCategories();
-      await loadProducts();
-      toast({
-        title: '分类已重命名',
-        description: `分类 "${oldName}" 已重命名为 "${newName}"，相关商品已更新`,
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('重命名分类失败:', error);
-      toast({
-        title: '重命名失败',
-        description: error.message || '重命名分类失败，请重试',
         variant: 'destructive'
       });
     }
