@@ -144,6 +144,106 @@ export default function AdminPage({
   const [tables, setTables] = useState(initialTables);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // ✅ 第一步：强制提升函数定义到组件最顶部
+  const handleAddCategory = async category => {
+    console.log('✅ [SUCCESS] 父组件接收到添加请求:', category);
+    try {
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const result = await db.collection('restaurant_category').add({
+        name: category
+      });
+      console.log('分类添加结果:', result);
+      await loadCategories();
+      toast({
+        title: '分类已添加',
+        description: `分类 "${category}" 已添加`
+      });
+    } catch (error) {
+      console.error('添加分类失败:', error);
+      toast({
+        title: '添加失败',
+        description: error.message || '添加分类失败，请重试',
+        variant: 'destructive'
+      });
+    }
+  };
+  const handleDeleteCategory = async category => {
+    try {
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const result = await db.collection('restaurant_category').where({
+        name: category
+      }).remove();
+      console.log('分类删除结果:', result);
+      const productResult = await db.collection('restaurant_product').where({
+        category: category
+      }).update({
+        category: '肉类'
+      });
+      console.log('商品分类更新结果:', productResult);
+      await loadCategories();
+      await loadProducts();
+      toast({
+        title: '分类已删除',
+        description: `分类 "${category}" 已删除，相关商品已移至默认分类`
+      });
+    } catch (error) {
+      console.error('删除分类失败:', error);
+      toast({
+        title: '删除失败',
+        description: error.message || '删除分类失败，请重试',
+        variant: 'destructive'
+      });
+    }
+  };
+  const handleRenameCategory = async (oldName, newName) => {
+    console.log('✅ [SUCCESS] 父组件接收到重命名请求:', oldName, newName);
+    try {
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const result = await db.collection('restaurant_category').where({
+        name: oldName
+      }).update({
+        data: {
+          name: newName
+        }
+      });
+      console.log('分类重命名结果:', result);
+      const productResult = await db.collection('restaurant_product').where({
+        category: oldName
+      }).update({
+        data: {
+          category: newName
+        }
+      });
+      console.log('商品分类更新结果:', productResult);
+      await loadCategories();
+      await loadProducts();
+      toast({
+        title: '分类已重命名',
+        description: `分类 "${oldName}" 已重命名为 "${newName}"，相关商品已更新`,
+        variant: 'default'
+      });
+    } catch (error) {
+      console.error('重命名分类失败:', error);
+      toast({
+        title: '重命名失败',
+        description: error.message || '重命名分类失败，请重试',
+        variant: 'destructive'
+      });
+    }
+  };
+  const handleAddTable = tableName => {
+    setTables([...tables, tableName]);
+  };
+  const handleDeleteTable = table => {
+    setTables(tables.filter(t => t !== table));
+  };
+  const handleRenameTable = (oldName, newName) => {
+    setTables(tables.map(t => t === oldName ? newName : t));
+  };
+
   // 自动跳转到新的 dashboard 页面
   useEffect(() => {
     if (isAuthenticated) {
@@ -417,121 +517,14 @@ export default function AdminPage({
     setIsEditDialogOpen(true);
   };
 
-  // 分类管理
-  const handleAddCategory = async category => {
-    try {
-      console.log('开始添加分类:', category);
-      // 添加分类到数据库
-      const tcb = await $w.cloud.getCloudInstance();
-      const db = tcb.database();
-      const result = await db.collection('restaurant_category').add({
-        name: category
-      });
-      console.log('分类添加结果:', result);
-
-      // 重新加载分类列表
-      await loadCategories();
-      toast({
-        title: '分类已添加',
-        description: `分类 "${category}" 已添加`
-      });
-    } catch (error) {
-      console.error('添加分类失败:', error);
-      console.error('错误详情:', JSON.stringify(error, null, 2));
-      toast({
-        title: '添加失败',
-        description: error.message || '添加分类失败，请重试',
-        variant: 'destructive'
-      });
-    }
-  };
-  const handleDeleteCategory = async category => {
-    try {
-      const tcb = await $w.cloud.getCloudInstance();
-      const db = tcb.database();
-
-      // 从数据库中删除分类
-      const result = await db.collection('restaurant_category').where({
-        name: category
-      }).remove();
-      console.log('分类删除结果:', result);
-
-      // 更新数据库中属于该分类的商品
-      const productResult = await db.collection('restaurant_product').where({
-        category: category
-      }).update({
-        category: '肉类'
-      });
-      console.log('商品分类更新结果:', productResult);
-
-      // 重新加载分类和商品数据
-      await loadCategories();
-      await loadProducts();
-      toast({
-        title: '分类已删除',
-        description: `分类 "${category}" 已删除，相关商品已移至默认分类`
-      });
-    } catch (error) {
-      console.error('删除分类失败:', error);
-      toast({
-        title: '删除失败',
-        description: error.message || '删除分类失败，请重试',
-        variant: 'destructive'
-      });
-    }
-  };
-  const handleRenameCategory = async (oldName, newName) => {
-    try {
-      const tcb = await $w.cloud.getCloudInstance();
-      const db = tcb.database();
-
-      // 更新数据库中的分类名称
-      const result = await db.collection('restaurant_category').where({
-        name: oldName
-      }).update({
-        data: {
-          name: newName
-        }
-      });
-      console.log('分类重命名结果:', result);
-
-      // 更新数据库中属于该分类的商品
-      const productResult = await db.collection('restaurant_product').where({
-        category: oldName
-      }).update({
-        data: {
-          category: newName
-        }
-      });
-      console.log('商品分类更新结果:', productResult);
-
-      // 重新加载分类和商品数据
-      await loadCategories();
-      await loadProducts();
-      toast({
-        title: '分类已重命名',
-        description: `分类 "${oldName}" 已重命名为 "${newName}"，相关商品已更新`
-      });
-    } catch (error) {
-      console.error('重命名分类失败:', error);
-      toast({
-        title: '重命名失败',
-        description: error.message || '重命名分类失败，请重试',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  // 桌号管理
-  const handleAddTable = table => {
-    setTables([...tables, table]);
-  };
-  const handleDeleteTable = table => {
-    setTables(tables.filter(t => t !== table));
-  };
-  const handleRenameTable = (oldName, newName) => {
-    setTables(tables.map(t => t === oldName ? newName : t));
-  };
+  // ✅ 第三步：插入诊断日志
+  console.log('🔍 [DIAGNOSTIC] 父组件渲染检查:');
+  console.log('   1. handleAddCategory 类型:', typeof handleAddCategory);
+  console.log('   2. handleRenameCategory 类型:', typeof handleRenameCategory);
+  console.log('   3. categories 数据量:', categories?.length);
+  if (typeof handleAddCategory !== 'function') {
+    console.error('❌ [CRITICAL] handleAddCategory 在渲染时为 undefined! 检查函数是否定义在 return 之后或被条件遮挡。');
+  }
   return <div className={`min-h-screen bg-[#FAFAFA] ${className || ''}`} style={style}>
       {/* 顶部导航 */}
       <header className="bg-[#1A1A1A] text-white sticky top-0 z-40 shadow-lg">
