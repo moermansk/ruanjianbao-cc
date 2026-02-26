@@ -630,8 +630,6 @@ export default function AdminPage({
 
                 {/* 操作按钮 */}
                 <div className="flex gap-2">
-                  <CategoryManager categories={categories} onAddCategory={handleAddCategory} onDeleteCategory={handleDeleteCategory} onRenameCategory={handleRenameCategory} />
-                  <TableManager tables={tables} onAddTable={handleAddTable} onDeleteTable={handleDeleteTable} onRenameTable={handleRenameTable} />
                   <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
                       <Button className="bg-[#FF5722] hover:bg-[#E64A19] text-white">
@@ -646,6 +644,12 @@ export default function AdminPage({
                       <ProductForm categories={categories} onSubmit={handleAddProduct} onCancel={() => setIsAddDialogOpen(false)} submitting={submitting} />
                     </DialogContent>
                   </Dialog>
+                </div>
+
+                {/* 管理面板区域 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CategoryManager categories={categories} onAddCategory={handleAddCategory} onDeleteCategory={handleDeleteCategory} onRenameCategory={handleRenameCategory} />
+                  <TableManager tables={tables} onAddTable={handleAddTable} onDeleteTable={handleDeleteTable} onRenameTable={handleRenameTable} />
                 </div>
               </div>
             </div>
