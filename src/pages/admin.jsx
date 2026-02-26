@@ -597,6 +597,16 @@ export default function AdminPage({
 
                 {/* 管理面板区域 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(() => {
+                console.log('🔍 [DEBUG] CategoryManager 渲染前检查:');
+                console.log('   handleAddCategory:', handleAddCategory);
+                console.log('   handleAddCategory 类型:', typeof handleAddCategory);
+                console.log('   handleDeleteCategory:', handleDeleteCategory);
+                console.log('   handleDeleteCategory 类型:', typeof handleDeleteCategory);
+                console.log('   handleRenameCategory:', handleRenameCategory);
+                console.log('   handleRenameCategory 类型:', typeof handleRenameCategory);
+                return null;
+              })()}
                   <CategoryManager categories={categories} onAddCategory={handleAddCategory} onDeleteCategory={handleDeleteCategory} onRenameCategory={handleRenameCategory} />
                   <TableManager tables={tables} onAddTable={handleAddTable} onDeleteTable={handleDeleteTable} onRenameTable={handleRenameTable} />
                 </div>
