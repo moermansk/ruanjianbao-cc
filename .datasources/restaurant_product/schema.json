@@ -1,0 +1,41 @@
+{
+  "name": "restaurant_product",
+  "title": "商品",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "商品名称",
+      "type": "String"
+    },
+    {
+      "name": "price",
+      "title": "价格",
+      "type": "Number"
+    },
+    {
+      "name": "description",
+      "title": "描述",
+      "type": "String"
+    },
+    {
+      "name": "category",
+      "title": "分类",
+      "type": "String"
+    },
+    {
+      "name": "image",
+      "title": "图片",
+      "type": "Image"
+    },
+    {
+      "name": "hot",
+      "title": "热销",
+      "type": "Boolean"
+    },
+    {
+      "name": "stock",
+      "title": "库存",
+      "type": "Number"
+    }
+  ]
+}

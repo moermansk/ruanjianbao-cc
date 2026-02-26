@@ -1,0 +1,11 @@
+{
+  "name": "restaurant_category",
+  "title": "商品分类",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "分类名称",
+      "type": "String"
+    }
+  ]
+}

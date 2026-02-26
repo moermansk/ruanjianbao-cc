@@ -1,0 +1,43 @@
+{
+  "name": "restaurant_order",
+  "title": "订单",
+  "schemas": [
+    {
+      "name": "orderNo",
+      "title": "订单号",
+      "type": "String"
+    },
+    {
+      "name": "tableNumber",
+      "title": "桌号",
+      "type": "String",
+      "validation": {
+        "pattern": "^A(0[1-9]|1[0-5])$",
+        "message": "桌号必须在 A01 到 A15 之间"
+      }
+    },
+    {
+      "name": "items",
+      "title": "商品列表",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "total",
+      "title": "总价",
+      "type": "Number"
+    },
+    {
+      "name": "status",
+      "title": "订单状态",
+      "type": "String"
+    },
+    {
+      "name": "remark",
+      "title": "备注",
+      "type": "String"
+    }
+  ]
+}
